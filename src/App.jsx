@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Dumbbell, Apple, Calendar } from 'lucide-react';
+import { Clock, Dumbbell, Apple, Calendar, X } from 'lucide-react';
 
 const FitnessScheduler = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Actualizar el tiempo cada minuto
   useEffect(() => {
@@ -12,6 +14,34 @@ const FitnessScheduler = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Función para abrir modal con información de la comida
+  const openMealModal = (meal) => {
+    setSelectedMeal(meal);
+    setShowModal(true);
+  };
+
+  // Función para cerrar modal
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedMeal(null);
+  };
+
+  // Manejar tecla Escape para cerrar modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    if (showModal) {
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [showModal]);
 
   // Configuración de entrenamientos por día (0 = Domingo, 1 = Lunes, etc.)
   const workoutSchedule = {
@@ -212,11 +242,12 @@ const FitnessScheduler = () => {
             {(mealSchedule[currentTime.getDay()] || []).map((meal, index) => (
               <div 
                 key={index} 
-                className={`bg-white/10 rounded-lg p-4 border ${
+                className={`bg-white/10 rounded-lg p-4 border cursor-pointer transition-all duration-300 hover:bg-white/15 hover:scale-105 ${
                   currentMeal && meal.timeRange === currentMeal.timeRange 
                     ? 'border-green-400 bg-green-500/20' 
-                    : 'border-white/20'
+                    : 'border-white/20 hover:border-white/40'
                 }`}
+                onClick={() => openMealModal(meal)}
               >
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-semibold text-gray-200">{meal.meal}</h4>
@@ -227,8 +258,8 @@ const FitnessScheduler = () => {
                     <div key={i} className="text-xs text-gray-300">• {food}</div>
                   ))}
                   {meal.foods.length > 2 && (
-                    <div className="text-xs text-gray-400">
-                      +{meal.foods.length - 2} más...
+                    <div className="text-xs text-blue-300">
+                      +{meal.foods.length - 2} más... (click para ver detalle)
                     </div>
                   )}
                 </div>
@@ -243,6 +274,51 @@ const FitnessScheduler = () => {
             💪 ¡Mantente constante y alcanza tus objetivos! 💪
           </p>
         </div>
+
+        {/* Modal para mostrar detalles de la comida */}
+        {showModal && selectedMeal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 max-w-md w-full border border-white/20 shadow-2xl">
+              {/* Header del modal */}
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{selectedMeal.meal}</h3>
+                  <span className="text-blue-300 text-sm">{selectedMeal.timeRange}</span>
+                </div>
+                <button 
+                  onClick={closeModal}
+                  className="bg-red-500/20 hover:bg-red-500/30 rounded-full p-2 transition-all duration-200"
+                >
+                  <X size={20} className="text-red-400" />
+                </button>
+              </div>
+
+              {/* Lista completa de alimentos */}
+              <div className="space-y-3">
+                <h4 className="text-lg font-semibold text-green-300 mb-3 flex items-center gap-2">
+                  <Apple size={18} />
+                  Alimentos completos:
+                </h4>
+                {selectedMeal.foods.map((food, index) => (
+                  <div key={index} className="bg-white/10 rounded-lg p-3 flex items-start gap-3">
+                    <span className="text-green-400 mt-1">•</span>
+                    <span className="text-gray-200 flex-1">{food}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Botón para cerrar */}
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={closeModal}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all duration-200 font-medium"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
