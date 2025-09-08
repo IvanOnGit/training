@@ -156,7 +156,7 @@ const FitnessScheduler = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">🏋️ Mi Entrenador Personal</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">Fit App</h1>
           <div className="flex items-center justify-center gap-2 text-blue-200">
             <Clock size={20} />
             <span className="text-xl">
